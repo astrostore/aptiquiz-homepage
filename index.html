@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AptiQuiz - AI-Powered Global Exam Preparation</title>
+    <meta name="description" content="Master SAT, GMAT, GRE, TOEFL, IELTS, MCAT, ACT with AI-generated practice tests. Adaptive learning, instant feedback, and performance analytics.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .gradient-text { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-section {
+            background-image: url('/images/online.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(30,60,114,0.85) 0%, rgba(42,82,152,0.85) 100%);
+        }
+        .exam-card:hover { transform: translateY(-5px); transition: all 0.3s ease; }
+        .exam-card img { transition: transform 0.3s ease; }
+        .exam-card:hover img { transform: scale(1.02); }
+        .pricing-card { transition: all 0.3s ease; }
+        .pricing-card:hover { transform: translateY(-8px); }
+        .language-badge { display: inline-block; background: #f3f4f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
+        .subscribe-btn { cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; text-align: center; max-width: 350px; }
+        .close-modal { margin-top: 16px; background: #2563eb; color: white; padding: 8px 24px; border: none; border-radius: 8px; cursor: pointer; }
+        
+        /* Signup Modal Styles */
+        .signup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .signup-modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            margin: 40px auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .signup-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 24px 24px 0 0;
+            text-align: center;
+        }
+        .signup-modal-body {
+            padding: 30px;
+        }
+        .signup-form-group {
+            margin-bottom: 20px;
+        }
+        .signup-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+        .signup-form-group input, .signup-form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .signup-form-group input:focus, .signup-form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .signup-help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .cf-turnstile {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .signup-submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .signup-submit-btn:hover { transform: translateY(-2px); }
+        .signup-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .signup-alert {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        .signup-alert-error { background: #fee; color: #c33; border: 1px solid #fcc; }
+        .signup-alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .close-icon {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: white;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md fixed w-full z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center flex-wrap">
+            <div class="text-2xl font-bold gradient-text">AptiQuiz</div>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="#exams" class="text-gray-600 hover:text-blue-600 transition">Exams</a>
+                <a href="#features" class="text-gray-600 hover:text-blue-600 transition">Features</a>
+                <a href="#pricing" class="text-gray-600 hover:text-blue-600 transition">Pricing</a>
+                <a href="#testimonials" class="text-gray-600 hover:text-blue-600 transition">Success Stories</a>
+                <a href="#languages" class="text-gray-600 hover:text-blue-600 transition">Languages</a>
+                <button onclick="openSignupModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">Free Trial →</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section min-h-screen flex items-center relative">
+        <div class="relative z-10 container mx-auto px-6 py-32 text-center text-white">
+            <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold mb-6">🎓 Your Journey to Global Success Starts Here</div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6">Ace Your Dream Exam<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-white">With AI-Powered Precision</span></h1>
+            <p class="text-xl max-w-2xl mx-auto mb-10">Join 50,000+ students from 120+ countries who achieved their target scores using AptiQuiz's intelligent test preparation platform.</p>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <button onclick="openSignupModal()" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Start Free Trial →</button>
+                <a href="#exams" class="border border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">Explore Exams</a>
+            </div>
+            <div class="mt-12 flex justify-center gap-8 text-sm opacity-80">
+                <span>✓ No credit card required</span>
+                <span>✓ 7-day free trial</span>
+                <span>✓ Cancel anytime</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Badges -->
+    <section class="py-12 bg-white border-b">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap justify-center gap-8 items-center">
+                <div class="text-center"><div class="text-2xl font-bold text-gray-800">50K+</div><div class="text-sm text-gray-500">Active Students</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-800">120+</div><div class="text-sm text-gray-500">Countries</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-800">12K+</div><div class="text-sm text-gray-500">AI Questions</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-800">98%</div><div class="text-sm text-gray-500">Success Rate</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Languages Section -->
+    <section id="languages" class="py-16 bg-gray-100">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold mb-4">🌍 Available in Multiple Languages</h2>
+            <p class="text-gray-600 mb-8">Practice in your preferred language</p>
+            <div class="flex flex-wrap justify-center gap-2">
+                <span class="language-badge">English</span>
+                <span class="language-badge">Español</span>
+                <span class="language-badge">Français</span>
+                <span class="language-badge">Deutsch</span>
+                <span class="language-badge">中文</span>
+                <span class="language-badge">日本語</span>
+                <span class="language-badge">العربية</span>
+                <span class="language-badge">Русский</span>
+                <span class="language-badge">Português</span>
+                <span class="language-badge">हिंदी</span>
+            </div>
+            <p class="text-sm text-gray-500 mt-4">More languages coming soon</p>
+        </div>
+    </section>
+
+    <!-- Exams Section -->
+    <section id="exams" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Global Exams We Cover</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Click on any exam to learn more about preparation strategies and study plans</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/sat.html', '_blank')">
+                    <img src="/images/sat.jpg" alt="SAT Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">🎓</div>
+                    <div class="font-bold text-lg">SAT</div>
+                    <div class="text-sm text-gray-500">Scholastic Aptitude Test</div>
+                    <a href="/sat.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/gmat.html', '_blank')">
+                    <img src="/images/gmat.jpg" alt="GMAT Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">📊</div>
+                    <div class="font-bold text-lg">GMAT</div>
+                    <div class="text-sm text-gray-500">Graduate Management</div>
+                    <a href="/gmat.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/gre.html', '_blank')">
+                    <img src="/images/gre.jpg" alt="GRE Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">🔬</div>
+                    <div class="font-bold text-lg">GRE</div>
+                    <div class="text-sm text-gray-500">Graduate Record Exam</div>
+                    <a href="/gre.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/toefl.html', '_blank')">
+                    <img src="/images/toefl.jpg" alt="TOEFL Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">🌎</div>
+                    <div class="font-bold text-lg">TOEFL</div>
+                    <div class="text-sm text-gray-500">English Language Test</div>
+                    <a href="/toefl.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/ielts.html', '_blank')">
+                    <img src="/images/ielts.jpg" alt="IELTS Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">🇬🇧</div>
+                    <div class="font-bold text-lg">IELTS</div>
+                    <div class="text-sm text-gray-500">International English Test</div>
+                    <a href="/ielts.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/mcat.html', '_blank')">
+                    <img src="/images/mcat.jpg" alt="MCAT Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">🩺</div>
+                    <div class="font-bold text-lg">MCAT</div>
+                    <div class="text-sm text-gray-500">Medical College Test</div>
+                    <a href="/mcat.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/act.html', '_blank')">
+                    <img src="/images/act.jpg" alt="ACT Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">📝</div>
+                    <div class="font-bold text-lg">ACT</div>
+                    <div class="text-sm text-gray-500">American College Test</div>
+                    <a href="/act.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+                <div class="bg-white p-6 rounded-xl text-center shadow-sm exam-card cursor-pointer" onclick="window.open('/lsat.html', '_blank')">
+                    <img src="/images/lsat.jpg" alt="LSAT Exam" class="w-full h-56 object-contain rounded-lg mb-4">
+                    <div class="text-5xl mb-3">⚖️</div>
+                    <div class="font-bold text-lg">LSAT</div>
+                    <div class="text-sm text-gray-500">Law School Test</div>
+                    <a href="/lsat.html" class="mt-3 text-blue-600 text-sm hover:text-blue-800 hover:underline inline-block">Learn More →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
+            <p class="text-center text-gray-600 mb-12">Choose the plan that fits your preparation needs</p>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="pricing-card bg-gray-50 rounded-xl p-8 text-center border">
+                    <div class="text-2xl font-bold mb-2">Free Trial</div>
+                    <div class="text-4xl font-bold mb-2" id="free-price">$0</div>
+                    <div class="text-gray-500 text-sm mb-4">7 days</div>
+                    <ul class="text-left space-y-2 mb-6 text-sm">
+                        <li>✓ 50 total questions</li>
+                        <li>✓ 7 questions per day limit</li>
+                        <li>✓ Basic analytics</li>
+                        <li>✓ 9 language support</li>
+                    </ul>
+                    <button onclick="openSignupModal()" class="block w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Start Free →</button>
+                </div>
+                <div class="pricing-card bg-white rounded-xl p-8 text-center border-2 border-blue-200 shadow-lg">
+                    <div class="text-2xl font-bold mb-2 text-blue-600">Standard</div>
+                    <div class="text-4xl font-bold mb-2" id="standard-price">$12<span class="text-lg text-gray-500">/mo</span></div>
+                    <div class="text-gray-600 text-sm mb-4">Billed monthly</div>
+                    <ul class="text-left space-y-2 mb-6 text-sm">
+                        <li>✓ 500 questions/month</li>
+                        <li>✓ Unlimited per day</li>
+                        <li>✓ Full analytics dashboard</li>
+                        <li>✓ Priority email support</li>
+                        <li>✓ 9 language support</li>
+                    </ul>
+                    <button onclick="handleSubscribe('standard', 12, 500)" class="subscribe-btn w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Subscribe →</button>
+                </div>
+                <div class="pricing-card bg-blue-600 text-white rounded-xl p-8 text-center shadow-xl transform scale-105">
+                    <div class="text-2xl font-bold mb-2">Premium</div>
+                    <div class="text-4xl font-bold mb-2" id="premium-price">$19<span class="text-lg">/mo</span></div>
+                    <div class="text-blue-100 text-sm mb-4">Best value</div>
+                    <ul class="text-left space-y-2 mb-6 text-sm">
+                        <li>✓ Unlimited AI-generated questions</li>
+                        <li>✓ AI essay grading</li>
+                        <li>✓ Advanced analytics & insights</li>
+                        <li>✓ Priority 24/7 support</li>
+                        <li>✓ Custom question generation</li>
+                        <li>✓ 9 language support</li>
+                    </ul>
+                    <button onclick="handleSubscribe('premium', 19, 799)" class="subscribe-btn w-full bg-white text-blue-600 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Subscribe →</button>
+                </div>
+            </div>
+            <p class="text-center text-gray-500 text-sm mt-8">*Annual plans available with 20% discount. Contact support for institution pricing.</p>
+        </div>
+    </section>
+
+    <!-- Daily Practice Limit -->
+    <section class="py-16 bg-amber-50">
+        <div class="container mx-auto px-6 text-center">
+            <div class="max-w-3xl mx-auto">
+                <h3 class="text-xl font-bold mb-4">📚 Daily Practice Limit</h3>
+                <p class="text-gray-700 mb-2">Free trial: Maximum 7 questions per day</p>
+                <p class="text-gray-600 text-sm">After answering 7 questions, you must wait until the next day to continue — designed to encourage consistent daily practice habits</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Why Students Choose AptiQuiz</h2>
+            <p class="text-center text-gray-600 mb-12">Everything you need to ace your exam, powered by cutting-edge AI</p>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="text-center p-6"><div class="text-5xl mb-3">🤖</div><h3 class="text-xl font-semibold mb-2">AI-Powered Generation</h3><p class="text-gray-600">Fresh, unique questions every session</p></div>
+                <div class="text-center p-6"><div class="text-5xl mb-3">⚡</div><h3 class="text-xl font-semibold mb-2">Instant Feedback</h3><p class="text-gray-600">Detailed explanations after every question</p></div>
+                <div class="text-center p-6"><div class="text-5xl mb-3">📈</div><h3 class="text-xl font-semibold mb-2">Smart Analytics</h3><p class="text-gray-600">Track progress and identify weak areas</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Success Stories</h2>
+            <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-gray-50 p-6 rounded-xl"><div class="text-yellow-400 mb-2">★★★★★</div><p class="text-gray-600 mb-3">"SAT score improved by 320 points! The AI questions are incredibly accurate."</p><div class="font-semibold">— Michael, USA</div><div class="text-sm text-gray-500">SAT: 1520</div></div>
+                <div class="bg-gray-50 p-6 rounded-xl"><div class="text-yellow-400 mb-2">★★★★★</div><p class="text-gray-600 mb-3">"GMAT 740! The adaptive difficulty prepared me for the toughest questions."</p><div class="font-semibold">— Priya, India</div><div class="text-sm text-gray-500">GMAT: 740</div></div>
+                <div class="bg-gray-50 p-6 rounded-xl"><div class="text-yellow-400 mb-2">★★★★★</div><p class="text-gray-600 mb-3">"IELTS 8.5 overall. The practice tests were exactly like the real exam."</p><div class="font-semibold">— Ahmed, UAE</div><div class="text-sm text-gray-500">IELTS: 8.5</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="gradient-bg py-16">
+        <div class="container mx-auto px-6 text-center text-white">
+            <h2 class="text-3xl font-bold mb-4">Ready to Achieve Your Dream Score?</h2>
+            <p class="mb-8">Join 50,000+ students who transformed their exam preparation</p>
+            <button onclick="openSignupModal()" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition inline-block">Start Your Free Trial →</button>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-4">Latest Exam Tips & Strategies</h2>
+            <p class="text-center text-gray-600 mb-12">From our expert educators</p>
+            <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-gray-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl mb-3">📝</div>
+                    <h3 class="font-bold mb-2">SAT vs ACT: Which one is right for you?</h3>
+                    <p class="text-gray-600 text-sm mb-3">A comprehensive comparison of the two major US college entrance exams...</p>
+                    <a href="https://aptiquiz.com/blog/sat-vs-act" class="text-blue-600 text-sm">Read More →</a>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl mb-3">🎯</div>
+                    <h3 class="font-bold mb-2">How to score 330+ on GRE in 3 months</h3>
+                    <p class="text-gray-600 text-sm mb-3">Proven strategies from our top-scoring students...</p>
+                    <a href="https://aptiquiz.com/blog/gre-330-strategy" class="text-blue-600 text-sm">Read More →</a>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl mb-3">🌎</div>
+                    <h3 class="font-bold mb-2">IELTS Speaking: Band 7+ secrets</h3>
+                    <p class="text-gray-600 text-sm mb-3">Tips to improve your fluency and pronunciation...</p>
+                    <a href="https://aptiquiz.com/blog/ielts-speaking-tips" class="text-blue-600 text-sm">Read More →</a>
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                <a href="https://aptiquiz.com/blog" class="text-blue-600 hover:underline">View All Articles →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6 text-center text-gray-400 text-sm">
+            <p>© 2025 AptiQuiz. All rights reserved.</p>
+            <p class="mt-2">Questions? Email us at <a href="mailto:support@aptiquiz.com" class="text-blue-400">support@aptiquiz.com</a></p>
+        </div>
+    </footer>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="signup-modal">
+        <div class="signup-modal-content">
+            <span class="close-icon" onclick="closeSignupModal()">&times;</span>
+            <div class="signup-modal-header">
+                <h2>🚀 Start Your Free Trial</h2>
+                <p>Join AptiQuiz today</p>
+            </div>
+            <div class="signup-modal-body">
+                <div id="signupAlert" class="signup-alert"></div>
+                <form id="signupForm" action="https://d1e90852.sibforms.com/serve/MUIFAK7xAsRg6UUAnQdqoCV6PYpZSGWeEPTndkV5o_L2Mj5kJU5yT7FkO92fvpabF4Ls6tjTAhpj2FOMOkIDdEH0pEaWT-DlOJcBvn2aMwUjZNCLrtSrEs0Y7j48r81xk68n_jhQEtKBRvze_ireQKpdwVr5wlo_CF-5giBYOUfp_nS78p2OYlvK8e48Li3MXIXYSRNbH-jyk0hn8w==" method="POST">
+                    <div class="signup-form-group">
+                        <label>First Name <span style="color:#e74c3c;">*</span></label>
+                        <input type="text" name="FIRSTNAME" required>
+                    </div>
+                    <div class="signup-form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="LASTNAME">
+                    </div>
+                    <div class="signup-form-group">
+                        <label>Email Address <span style="color:#e74c3c;">*</span></label>
+                        <input type="email" name="EMAIL" required>
+                        <div class="signup-help-text">We'll send practice questions and updates</div>
+                    </div>
+                    <div class="signup-form-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" name="MOBILE" placeholder="+91 XXXXXXXXXX">
+                        <div class="signup-help-text">Optional for India — SMS reminders for practice</div>
+                    </div>
+                    <div class="signup-form-group">
+                        <label>Country</label>
+                        <select name="COUNTRY">
+                            <option value="India">India</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Cloudflare Turnstile -->
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAADRI97A01AATCSf1" data-theme="light"></div>
+
+                    <button type="submit" id="signupSubmitBtn" class="signup-submit-btn">Start Free Trial →</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for UPI QR -->
+    <div id="upiModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalAmount" class="text-xl font-bold mb-4">Pay ₹0</h3>
+            <img id="qrImage" class="mx-auto mb-4" style="width: 200px;">
+            <p class="text-gray-600 mb-4">Scan with any UPI app (Google Pay, PhonePe, Paytm)</p>
+            <p class="text-gray-400 text-sm mb-4">After payment, your account will be upgraded automatically</p>
+            <button onclick="closeModal()" class="close-modal">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Signup Modal Functions
+        function openSignupModal() {
+            document.getElementById('signupModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSignupModal() {
+            document.getElementById('signupModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('signupModal');
+            const upiModal = document.getElementById('upiModal');
+            if (event.target === modal) {
+                closeSignupModal();
+            }
+            if (event.target === upiModal) {
+                closeModal();
+            }
+        }
+
+        // Form submission with Turnstile validation
+        const form = document.getElementById('signupForm');
+        const submitBtn = document.getElementById('signupSubmitBtn');
+        const alertDiv = document.getElementById('signupAlert');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
+                if (!turnstileResponse || !turnstileResponse.value) {
+                    e.preventDefault();
+                    showSignupAlert('Please complete the security check.', 'error');
+                    return;
+                }
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                
+                // Form will submit normally to Brevo
+            });
+        }
+
+        function showSignupAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `signup-alert signup-alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Reset button if something fails
+        if (window.location.search.includes('error')) {
+            showSignupAlert('Submission failed. Please try again.', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Start Free Trial →';
+            }
+        }
+
+        // Pricing and payment functions
+        let userCurrency = 'USD';
+        let userCountry = '';
+
+        fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => {
+                userCountry = data.country_code;
+                if (userCountry === 'IN') {
+                    userCurrency = 'INR';
+                    document.getElementById('free-price').innerHTML = '₹0';
+                    document.getElementById('standard-price').innerHTML = '₹500<span class="text-lg text-gray-500">/mo</span>';
+                    document.getElementById('premium-price').innerHTML = '₹799<span class="text-lg">/mo</span>';
+                }
+            })
+            .catch(() => {
+                userCurrency = 'USD';
+            });
+
+        function handleSubscribe(plan, usdAmount, inrAmount) {
+            if (userCountry === 'IN') {
+                showUPIQR(plan, inrAmount);
+            } else {
+                alert(`PayPal payment for ${plan} plan - $${usdAmount}/month. Complete your payment at PayPal.`);
+            }
+        }
+
+        function showUPIQR(plan, amount) {
+            const upiId = 'yourupi@ybl';
+            const upiUrl = `upi://pay?pa=${upiId}&pn=AptiQuiz&am=${amount}&cu=INR`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+            
+            document.getElementById('modalAmount').innerHTML = `Pay ₹${amount}`;
+            document.getElementById('qrImage').src = qrUrl;
+            document.getElementById('upiModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('upiModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
